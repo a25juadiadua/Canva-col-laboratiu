@@ -2,6 +2,12 @@ const socket = io();
 
 let nombre = prompt('Introduce tu nombre');
 
+while (nombre === null || nombre.length < 3 ){
+
+    nombre = prompt('El nom ha de tenir minim 3 caracters');
+}
+console.log("Nombre de usuario" , nombre);
+
 socket.emit('envio:nombre', nombre);
 
 // -------------------------- CANVAS -----------------------
@@ -18,10 +24,14 @@ canvas.addEventListener('mousemove', (e) => {
     posicionX = e.offsetX;
     posicionY = e.offsetY;
 
-    ctx.clearRect(0, 0, 1000, 600);
+    let text = ctx.measureText(nombre).width;
+
+    ctx.clearRect(0, 0, 1500, 600);
     ctx.beginPath();
     ctx.arc(posicionX, posicionY,10, 0, Math.PI * 2);
     ctx.fill();
-    console.log(`x: ${posicionX}  y: ${posicionY}`);
+    ctx.strokeRect(posicionX, posicionY + 20,  text + 10 , 15)
+    ctx.fillText(nombre, posicionX + 5, posicionY + 30);
 
+    socket.emit('envio:canva', ctx);
 });

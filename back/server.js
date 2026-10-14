@@ -5,6 +5,7 @@ const PORT = 3378;
 const app = express();
 
 app.use(express.static('../public'));
+app.use(express.static('node_modules/sweetalert2/dist'));
 
 const server = createServer(app);
 
@@ -16,6 +17,10 @@ io.on('connection', (socket) => {
     socket.on('envio:nombre', nombre => {
         console.log(`Un usuario se ha puesto de nombre: ${nombre}`);
     });
+
+    socket.on('envio:canva', ctx => {
+        
+    })
 })
 
 server.listen(3378, () => {
