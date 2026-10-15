@@ -1,26 +1,54 @@
 const socket = io();
 let posicionX = 0;
 let posicionY = 0;
-let nombre = prompt('Introduce tu nombre');
+let nombre = "";
+let nombreValido = false;
 let color = `hsl(${Math.random() * 360}, 70%, 50%)`;
+let usuarios = {};
 
-
-
-
-while (nombre === null || nombre.length < 3 ){
-
-    nombre = prompt('El nom ha de tenir minim 3 caracters');
+function pedirNombre() {
+    Swal.fire({
+        title: "Benvingut!",
+        text: "Introdueix el teu nom per entrar",
+        input: "text",
+        inputPlaceholder: "Mínim 3 caràcters",
+        confirmButtonText: "Entrar",
+        allowOutsideClick: false,
+        allowEscapeKey: false
+    }).then(resultado => {
+        socket.emit('envio:nombre', resultado.value);
+    });
 }
-console.log("Nombre de usuario" , nombre);
 
-socket.emit('envio:nombre', nombre);
+socket.on("nombre:ok", nombreOk => {
+    nombre = nombreOk;
+    nombreValido = true;
+});
+
+socket.on("nombre:error", () => {
+    Swal.fire({
+        icon: "error",
+        title: "Ups...",
+        text: "Nom no vàlid o ja en ús (mínim 3 caràcters)",
+        confirmButtonText: "Tornar-ho a provar"
+    }).then(pedirNombre);
+});
+
+pedirNombre();
 
 // -------------------------- CANVAS -----------------------
 
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-let usuarios = {};
+
+function ajustarCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+ajustarCanvas();
+window.addEventListener("resize", ajustarCanvas);
 
 
 //QUE SE MUEVA CON EL RATON
@@ -31,16 +59,17 @@ canvas.addEventListener('mousemove', (e) => {
 
 
 setInterval(() => {
-    let datosUsuario = {
-        nom: nombre,
-        X: posicionX,
-        Y: posicionY,
-        color : color
-    };
+    if (nombreValido) {
+        let datosUsuario = {
+            nom: nombre,
+            X: posicionX,
+            Y: posicionY,
+            color: color
+        };
 
-    usuarios[nombre] = datosUsuario;
-
-    socket.emit('envio:canva', datosUsuario);
+        usuarios[nombre] = datosUsuario;
+        socket.emit('envio:canva', datosUsuario);
+    }
 
     dibujarUsuarios();
 }, 20);
@@ -49,6 +78,11 @@ setInterval(() => {
 socket.on('envio:canva', datosUsuario => {
     usuarios[datosUsuario.nom] = datosUsuario;
 
+    dibujarUsuarios();
+});
+
+socket.on('usuario:desconectado', nom => {
+    delete usuarios[nom];
     dibujarUsuarios();
 });
 

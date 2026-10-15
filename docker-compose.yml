@@ -1,0 +1,6 @@
+services:
+  canva:
+    build: .
+    ports:
+      - "3378:3378"
+    restart: unless-stopped
