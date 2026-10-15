@@ -8,21 +8,24 @@ app.use(express.static('../public'));
 app.use(express.static('node_modules/sweetalert2/dist'));
 
 const server = createServer(app);
-
 const io = new Server(server);
 
 io.on('connection', (socket) => {
-    console.log("Conexión Exitosa!!");
+    console.log("Usuario conectado");
 
     socket.on('envio:nombre', nombre => {
         console.log(`Un usuario se ha puesto de nombre: ${nombre}`);
     });
 
-    socket.on('envio:canva', ctx => {
-        
-    })
-})
+    socket.on('envio:canva', datosUsuario => {
+        io.emit('envio:canva', datosUsuario);
+    });
+});
 
-server.listen(3378, () => {
+server.on('error', (error) => {
+    console.log("Error de conexión:", error);
+});
+
+server.listen(PORT, () => {
     console.log(`Servidor en marcha en el puerto ${PORT}`);
-})
+});
